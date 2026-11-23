@@ -113,7 +113,7 @@ def _safe(fn, arg):
         return None
 
 
-def tg(method, data=None, tries=4):
+def tg(method, data=None, tries=6):
     url = "https://api.telegram.org/bot%s/%s" % (TOKEN, method)
     body = urllib.parse.urlencode(data).encode() if data else None
     for a in range(tries):
@@ -130,7 +130,7 @@ def tg(method, data=None, tries=4):
                 except Exception:
                     pass
             print("telegram retry in %ds: %s" % (wait, e))
-            time.sleep(min(wait, 60))
+            time.sleep(min(wait, 150))
 
 
 def find_chat_id(state):
