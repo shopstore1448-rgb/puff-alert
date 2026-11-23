@@ -181,6 +181,9 @@ def main():
         save(state, before)
         return
 
+    if not (TOKEN and chat):
+        print("Telegram is not set up yet (TELEGRAM_TOKEN / TELEGRAM_CHAT_ID). Skipping until it is.")
+        return
     live = scrape()
     new = {k: (1 if v["qty"] > 0 else 0) for k, v in live.items()}
     msgs = []
