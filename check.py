@@ -113,11 +113,24 @@ def _safe(fn, arg):
         return None
 
 
-def tg(method, data=None):
+def tg(method, data=None, tries=4):
     url = "https://api.telegram.org/bot%s/%s" % (TOKEN, method)
     body = urllib.parse.urlencode(data).encode() if data else None
-    with urllib.request.urlopen(urllib.request.Request(url, data=body), timeout=30) as r:
-        return json.loads(r.read().decode("utf-8"))
+    for a in range(tries):
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, data=body), timeout=30) as r:
+                return json.loads(r.read().decode("utf-8"))
+        except Exception as e:
+            if a == tries - 1:
+                raise
+            wait = 5 * (a + 1)
+            if getattr(e, "code", None) == 429:
+                try:
+                    wait = int(json.loads(e.read().decode())["parameters"]["retry_after"]) + 1
+                except Exception:
+                    pass
+            print("telegram retry in %ds: %s" % (wait, e))
+            time.sleep(min(wait, 60))
 
 
 def find_chat_id(state):
