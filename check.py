@@ -123,7 +123,7 @@ def tg(method, data=None):
 def find_chat_id(state):
     if CHAT_ID:
         return CHAT_ID
-    if not TOKEN:
+    if not TOKEN or "--test" not in sys.argv:
         return ""
     try:
         for u in reversed(tg("getUpdates").get("result", [])):
