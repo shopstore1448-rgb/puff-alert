@@ -72,7 +72,7 @@ def product(slug):
     items = {}
     for o in r.get("multi_configurable_option") or []:
         ch = o.get("single_child_info") or {}
-        url = "https://www.boutiqaat.com/ar-sa/women/" + (ch.get("slug") or slug) + "/p/"
+        url = "https://www.boutiqaat.com/ar-sa/women/" + re.sub(r"/p/?$", "", ch.get("slug") or slug) + "/p/"
         items[url] = {"name": name, "ml": mlv(o.get("value")),
                       "qty": int(float(o.get("available_qty") or 0)),
                       "price": int(float(ch.get("final_price_with_tax") or 0)), "url": url}
