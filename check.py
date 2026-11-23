@@ -18,6 +18,7 @@ LIST_PATH = "/ar-sa/women/puff/br/cid/480/?page=%d"
 TOKEN = os.environ.get("TELEGRAM_TOKEN", "").strip()
 CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
 # Optional: only alert for names containing one of these words (comma separated)
+NTFY_TOPIC = os.environ.get("NTFY_TOPIC", "").strip()
 WATCH = [w.strip() for w in os.environ.get("WATCH", "").split(",") if w.strip()]
 
 
@@ -113,7 +114,7 @@ def _safe(fn, arg):
         return None
 
 
-def tg(method, data=None, tries=6):
+def tg(method, data=None, tries=3):
     url = "https://api.telegram.org/bot%s/%s" % (TOKEN, method)
     body = urllib.parse.urlencode(data).encode() if data else None
     for a in range(tries):
@@ -130,7 +131,7 @@ def tg(method, data=None, tries=6):
                 except Exception:
                     pass
             print("telegram retry in %ds: %s" % (wait, e))
-            time.sleep(min(wait, 150))
+            time.sleep(min(wait, 40))
 
 
 def find_chat_id(state):
@@ -152,20 +153,46 @@ def find_chat_id(state):
     return ""
 
 
-def send(chat, text):
-    if not TOKEN or not chat:
-        print("(telegram not set up) would send:\n" + text)
-        return
-    chunks, cur = [], ""
-    for block in text.split("\n\n"):
-        if len(cur) + len(block) > 3800:
-            chunks.append(cur)
-            cur = ""
-        cur += block + "\n\n"
-    chunks.append(cur)
-    for c in chunks:
-        if c.strip():
-            tg("sendMessage", {"chat_id": chat, "text": c.strip(), "disable_web_page_preview": "true"})
+def ntfy(text, title="PUFF", click=""):
+    headers = {"Title": title.encode("utf-8").decode("latin-1"), "Priority": "high", "Tags": "bell"}
+    if click:
+        headers["Click"] = click
+    for a in range(3):
+        try:
+            req = urllib.request.Request("https://ntfy.sh/" + NTFY_TOPIC, data=text.encode("utf-8"), headers=headers)
+            urllib.request.urlopen(req, timeout=30).read()
+            return True
+        except Exception as e:
+            print("ntfy retry:", e)
+            time.sleep(5 * (a + 1))
+    return False
+
+
+def send(chat, text, items=None):
+    """Send to every channel that is set up. items: list of (text, url) for one ntfy push each."""
+    ok = False
+    if NTFY_TOPIC:
+        for t, url in (items or [(text, "")]):
+            ok = ntfy(t, "PUFF", url) or ok
+    if TOKEN and chat:
+        chunks, cur = [], ""
+        for block in text.split("\n\n"):
+            if len(cur) + len(block) > 3800:
+                chunks.append(cur)
+                cur = ""
+            cur += block + "\n\n"
+        chunks.append(cur)
+        try:
+            for c in chunks:
+                if c.strip():
+                    tg("sendMessage", {"chat_id": chat, "text": c.strip(), "disable_web_page_preview": "true"})
+            ok = True
+        except Exception as e:
+            print("telegram failed:", e)
+    if not ok:
+        print("(no channel delivered) message was:\n" + text)
+        if NTFY_TOPIC or TOKEN:
+            raise RuntimeError("could not deliver the alert")
 
 
 def fmt(it, tag):
@@ -194,12 +221,12 @@ def main():
         save(state, before)
         return
 
-    if not (TOKEN and chat):
-        print("Telegram is not set up yet (TELEGRAM_TOKEN / TELEGRAM_CHAT_ID). Skipping until it is.")
+    if not (NTFY_TOPIC or (TOKEN and chat)):
+        print("No alert channel set up yet (NTFY_TOPIC or TELEGRAM_TOKEN + TELEGRAM_CHAT_ID). Skipping.")
         return
     live = scrape()
     new = {k: (1 if v["qty"] > 0 else 0) for k, v in live.items()}
-    msgs = []
+    msgs, items = [], []
     if not old:
         out = sum(1 for v in new.values() if not v)
         msgs.append("👋 بدأت المراقبة.\nأراقب %d حجم/لون، منها %d غير متوفر الآن.\n"
@@ -210,13 +237,15 @@ def main():
                 continue
             if old.get(k) == 0:
                 msgs.append(fmt(it, "🟢 رجع متوفر!\n"))
+                items.append((msgs[-1], it["url"]))
             elif k not in old:
                 msgs.append(fmt(it, "🆕 منتج جديد متوفر!\n"))
+                items.append((msgs[-1], it["url"]))
     merged = dict(old)
     merged.update(new)  # sizes not read this time keep their old value
     state["items"] = merged
     if msgs:
-        send(chat, "\n\n".join(msgs))
+        send(chat, "\n\n".join(msgs), items or None)
     print("alerts sent:", len(msgs))
     save(state, before)
 

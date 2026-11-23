@@ -27,6 +27,7 @@ jobs:
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           WATCH: ${{ vars.WATCH }}
         run: python3 check.py ${{ inputs.test && '--test' || '' }}
       - name: Save state
