@@ -19,6 +19,7 @@ TOKEN = os.environ.get("TELEGRAM_TOKEN", "").strip()
 CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
 # Optional: only alert for names containing one of these words (comma separated)
 NTFY_TOPIC = os.environ.get("NTFY_TOPIC", "").strip()
+LOW = int(os.environ.get("LOW_STOCK") or 10)  # alert when a size drops to this many or fewer
 WATCH = [w.strip() for w in os.environ.get("WATCH", "").split(",") if w.strip()]
 
 
@@ -203,7 +204,7 @@ def fmt(it, tag):
 
 
 def title(it, word):
-    return "%s توفر %d حبة" % (word, it["qty"])
+    return "%s %d حبة" % (word, it["qty"])
 
 
 def wanted(it):
@@ -231,7 +232,8 @@ def main():
         print("No alert channel set up yet (NTFY_TOPIC or TELEGRAM_TOKEN + TELEGRAM_CHAT_ID). Skipping.")
         return
     live = scrape()
-    new = {k: (1 if v["qty"] > 0 else 0) for k, v in live.items()}
+    # 0 = out of stock, 1 = low (1..LOW), 2 = plenty
+    new = {k: (0 if v["qty"] <= 0 else 1 if v["qty"] <= LOW else 2) for k, v in live.items()}
     msgs, items = [], []
     if not old:
         out = sum(1 for v in new.values() if not v)
@@ -243,10 +245,13 @@ def main():
                 continue
             if old.get(k) == 0:
                 msgs.append(fmt(it, "🟢 رجع متوفر!\n"))
-                items.append((msgs[-1], it["url"], title(it, "🟢")))
+                items.append((msgs[-1], it["url"], title(it, "🟢 رجع متوفر:")))
             elif k not in old:
                 msgs.append(fmt(it, "🆕 منتج جديد متوفر!\n"))
-                items.append((msgs[-1], it["url"], title(it, "🆕")))
+                items.append((msgs[-1], it["url"], title(it, "🆕 جديد:")))
+            elif new[k] == 1 and old.get(k) != 1:
+                msgs.append(fmt(it, "⚠️ قرب يخلص! باقي %d حبة بس\n" % it["qty"]))
+                items.append((msgs[-1], it["url"], "⚠️ باقي %d حبة بس" % it["qty"]))
     merged = dict(old)
     merged.update(new)  # sizes not read this time keep their old value
     state["items"] = merged

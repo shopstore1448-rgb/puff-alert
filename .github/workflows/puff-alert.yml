@@ -29,6 +29,7 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           WATCH: ${{ vars.WATCH }}
+          LOW_STOCK: ${{ vars.LOW_STOCK }}
         run: python3 check.py ${{ inputs.test && '--test' || '' }}
       - name: Save state
         run: |
@@ -37,5 +38,6 @@ jobs:
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add state.json
             git commit -m "update stock state"
+            git pull --rebase -q || true
             git push
           fi
