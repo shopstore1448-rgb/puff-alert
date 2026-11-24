@@ -1,27 +1,6 @@
 {
- "time": "2026-11-24T11:45:37Z",
+ "time": "2026-11-24T11:50:39Z",
  "items": [
-  {
-   "name": "اصدار خاص بف سيبي ثري دي ستروبيري - ديزي بيريز",
-   "ml": 350,
-   "qty": 70,
-   "price": 140,
-   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-3d-strawberry-350ml-i-00000230458-1/p/"
-  },
-  {
-   "name": "اصدار خاص بف سيبي ثري دي ستروبيري - ديزي بيريز",
-   "ml": 450,
-   "qty": 3488,
-   "price": 154,
-   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-3d-strawberry-450ml-i-00000230459-1/p/"
-  },
-  {
-   "name": "اصدار خاص بف سيبي ثري دي ستروبيري - ديزي بيريز",
-   "ml": 550,
-   "qty": 1008,
-   "price": 168,
-   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-3d-strawberry-550ml-i-00000230460-1/p/"
-  },
   {
    "name": "اصدار خاص بف سيبي ثري دي شيل - سيشل سمر",
    "ml": 350,
@@ -340,7 +319,7 @@
   {
    "name": "بف سيبي لون بابل غم مطفي",
    "ml": 450,
-   "qty": 425,
+   "qty": 426,
    "price": 140,
    "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-bubble-gum-450-ml-matte-i-00000171477-1/p/"
   },
@@ -429,6 +408,27 @@
    "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-burgandy-450-ml-rubber-i-00000171489-1/p/"
   },
   {
+   "name": "بف سيبي لون بورغندي مطفي",
+   "ml": 350,
+   "qty": 0,
+   "price": 126,
+   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-burgandy-350-ml-matte-i-00000171486-1/p/"
+  },
+  {
+   "name": "بف سيبي لون بورغندي مطفي",
+   "ml": 450,
+   "qty": 0,
+   "price": 140,
+   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-burgandy-450-ml-matte-i-00000171487-1/p/"
+  },
+  {
+   "name": "بف سيبي لون بورغندي مطفي",
+   "ml": 550,
+   "qty": 0,
+   "price": 154,
+   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-burgandy-550ml-matte-i-00000186382-1/p/"
+  },
+  {
    "name": "بف سيبي لون بيبي بلو مطفي",
    "ml": 350,
    "qty": 0,
@@ -450,6 +450,20 @@
    "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-baby-blue-550ml-matte-i-00000186375-1/p/"
   },
   {
+   "name": "بف سيبي لون بيبي بينك عاكس",
+   "ml": 350,
+   "qty": 0,
+   "price": 126,
+   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-baby-pink-350-ml-shine-i-00000171472-1/p/"
+  },
+  {
+   "name": "بف سيبي لون بيبي بينك عاكس",
+   "ml": 450,
+   "qty": 0,
+   "price": 140,
+   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-baby-pink-450-ml-shine-i-00000171473-1/p/"
+  },
+  {
    "name": "بف سيبي لون بيبي بينك مطفي",
    "ml": 350,
    "qty": 0,
@@ -469,6 +483,27 @@
    "qty": 0,
    "price": 154,
    "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-baby-pink-550ml-matte-i-00000186376-1/p/"
+  },
+  {
+   "name": "بف سيبي لون بيري جام مطفي",
+   "ml": 350,
+   "qty": 0,
+   "price": 126,
+   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-eggplant-350-ml-matte-i-00000171484-1/p/"
+  },
+  {
+   "name": "بف سيبي لون بيري جام مطفي",
+   "ml": 450,
+   "qty": 0,
+   "price": 140,
+   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-eggplant-450-ml-matte-i-00000171485-1/p/"
+  },
+  {
+   "name": "بف سيبي لون بيري جام مطفي",
+   "ml": 550,
+   "qty": 0,
+   "price": 154,
+   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-berry-jam-550ml-matte-i-00000186378-1/p/"
   },
   {
    "name": "بف سيبي لون بينك يارو مطفي",
@@ -511,27 +546,6 @@
    "qty": 817,
    "price": 154,
    "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-chocolate-brown-550ml-matte-i-00000186385-1/p/"
-  },
-  {
-   "name": "بف سيبي لون تشيري مطفي",
-   "ml": 350,
-   "qty": 3616,
-   "price": 126,
-   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-cherry-350-ml-matte-i-00000171498-1/p/"
-  },
-  {
-   "name": "بف سيبي لون تشيري مطفي",
-   "ml": 450,
-   "qty": 4223,
-   "price": 140,
-   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-cherry-450-ml-matte-i-00000171499-1/p/"
-  },
-  {
-   "name": "بف سيبي لون تشيري مطفي",
-   "ml": 550,
-   "qty": 2117,
-   "price": 154,
-   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-cherry-550ml-matte-i-00000186384-1/p/"
   },
   {
    "name": "بف سيبي لون توب مطفي",
