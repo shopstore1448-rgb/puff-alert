@@ -31,6 +31,8 @@ jobs:
           WATCH: ${{ vars.WATCH }}
           LOW_STOCK: ${{ vars.LOW_STOCK }}
           TYPES: ${{ vars.TYPES }}
+          LOOP_SECONDS: ${{ vars.LOOP_SECONDS || '270' }}
+          EVERY_SECONDS: ${{ vars.EVERY_SECONDS || '60' }}
         run: python3 check.py ${{ inputs.test && '--test' || '' }}
       - name: Keep a copy of the stock data
         if: always()
@@ -41,6 +43,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
       - name: Save state
+        if: always()
         run: |
           if [ -n "$(git status --porcelain state.json snapshot.json)" ]; then
             git config user.name "puff-bot"

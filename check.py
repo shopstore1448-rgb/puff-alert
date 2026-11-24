@@ -101,7 +101,9 @@ def product(slug):
     return items
 
 
-def scrape():
+def scrape(slugs=None):
+    if slugs:
+        return scrape_products(slugs), slugs
     names = {}
     with ThreadPoolExecutor(4) as ex:
         for res in ex.map(lambda p: _safe(list_page, p), range(1, 31)):
@@ -113,6 +115,10 @@ def scrape():
     slugs = [s for s in slugs if watched_type(s)]
     if not slugs:
         raise RuntimeError("no products of type %s found" % TYPES)
+    return scrape_products(slugs), slugs
+
+
+def scrape_products(slugs):
     live, failed = {}, 0
     with ThreadPoolExecutor(6) as ex:
         for res in ex.map(lambda s: _safe(product, s), slugs):
@@ -234,7 +240,6 @@ def main():
     state = {}
     if os.path.exists(STATE):
         state = json.load(open(STATE, encoding="utf-8"))
-    old = state.get("items", {})
     before = json.dumps(state, sort_keys=True, ensure_ascii=False)
     chat = find_chat_id(state)
     if TOKEN and not chat:
@@ -250,7 +255,23 @@ def main():
     if not (NTFY_TOPIC or (TOKEN and chat)):
         print("No alert channel set up yet (NTFY_TOPIC or TELEGRAM_TOKEN + TELEGRAM_CHAT_ID). Skipping.")
         return
-    live = scrape()
+    loop = int(os.environ.get("LOOP_SECONDS") or 0)   # keep checking inside one run
+    every = int(os.environ.get("EVERY_SECONDS") or 60)
+    start, slugs, first = time.time(), None, True
+    while True:
+        t0 = time.time()
+        live, slugs = scrape(slugs)
+        check_once(state, live, chat, first)
+        first = False
+        save(state, before)
+        before = json.dumps(state, sort_keys=True, ensure_ascii=False)
+        if time.time() - start + every > loop:
+            break
+        time.sleep(max(0, every - (time.time() - t0)))
+
+
+def check_once(state, live, chat, first):
+    old = state.get("items", {})
     import datetime
     snap = {"time": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "items": sorted(live.values(), key=lambda v: (v["name"], v["ml"]))}
@@ -278,11 +299,10 @@ def main():
                 items.append((msgs[-1], it["url"], "⚠️ باقي %d حبة بس" % it["qty"]))
     merged = {k: v for k, v in old.items() if watched_type(k)}
     merged.update(new)  # sizes not read this time keep their old value
-    state["items"] = merged
     if msgs:
         send(chat, "\n\n".join(msgs), items or None)
-    print("alerts sent:", len(msgs))
-    save(state, before)
+    state["items"] = merged
+    print(time.strftime("%H:%M:%S"), "sizes: %d, alerts sent: %d" % (len(live), len(msgs)))
 
 
 def save(state, before):
