@@ -251,6 +251,11 @@ def main():
         print("No alert channel set up yet (NTFY_TOPIC or TELEGRAM_TOKEN + TELEGRAM_CHAT_ID). Skipping.")
         return
     live = scrape()
+    import datetime
+    snap = {"time": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "items": sorted(live.values(), key=lambda v: (v["name"], v["ml"]))}
+    with open(os.path.join(HERE, "snapshot.json"), "w", encoding="utf-8") as f:
+        json.dump(snap, f, ensure_ascii=False, indent=1)
     # 0 = out of stock, 1 = low (1..LOW), 2 = plenty
     new = {k: (0 if v["qty"] <= 0 else 1 if v["qty"] <= LOW else 2) for k, v in live.items()}
     msgs, items = [], []
