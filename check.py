@@ -154,12 +154,13 @@ def find_chat_id(state):
 
 
 def ntfy(text, title="PUFF", click=""):
-    headers = {"Title": title.encode("utf-8").decode("latin-1"), "Priority": "high", "Tags": "bell"}
+    msg = {"topic": NTFY_TOPIC, "title": title, "message": text, "priority": 4, "tags": ["bell"]}
     if click:
-        headers["Click"] = click
+        msg["click"] = click
     for a in range(3):
         try:
-            req = urllib.request.Request("https://ntfy.sh/" + NTFY_TOPIC, data=text.encode("utf-8"), headers=headers)
+            req = urllib.request.Request("https://ntfy.sh/", data=json.dumps(msg).encode("utf-8"),
+                                         headers={"Content-Type": "application/json"})
             urllib.request.urlopen(req, timeout=30).read()
             return True
         except Exception as e:
@@ -172,8 +173,8 @@ def send(chat, text, items=None):
     """Send to every channel that is set up. items: list of (text, url) for one ntfy push each."""
     ok = False
     if NTFY_TOPIC:
-        for t, url in (items or [(text, "")]):
-            ok = ntfy(t, "PUFF", url) or ok
+        for t, url, title in (items or [(text, "", "PUFF")]):
+            ok = ntfy(t, title, url) or ok
     if TOKEN and chat:
         chunks, cur = [], ""
         for block in text.split("\n\n"):
@@ -197,7 +198,12 @@ def send(chat, text, items=None):
 
 def fmt(it, tag):
     size = ("الحجم: %d مل\n" % it["ml"]) if it["ml"] else ""
-    return "%s%s\n%sالسعر: %d ر.س\nالكمية: %d\n%s" % (tag, it["name"], size, it["price"], it["qty"], it["url"])
+    return "%s%s\n%sالسعر: %d ر.س\nالكمية المتوفرة: %d حبة\n%s" % (
+        tag, it["name"], size, it["price"], it["qty"], it["url"])
+
+
+def title(it, word):
+    return "%s توفر %d حبة" % (word, it["qty"])
 
 
 def wanted(it):
@@ -237,10 +243,10 @@ def main():
                 continue
             if old.get(k) == 0:
                 msgs.append(fmt(it, "🟢 رجع متوفر!\n"))
-                items.append((msgs[-1], it["url"]))
+                items.append((msgs[-1], it["url"], title(it, "🟢")))
             elif k not in old:
                 msgs.append(fmt(it, "🆕 منتج جديد متوفر!\n"))
-                items.append((msgs[-1], it["url"]))
+                items.append((msgs[-1], it["url"], title(it, "🆕")))
     merged = dict(old)
     merged.update(new)  # sizes not read this time keep their old value
     state["items"] = merged
