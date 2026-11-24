@@ -260,7 +260,20 @@ def main():
     start, slugs, first = time.time(), None, True
     while True:
         t0 = time.time()
-        live, slugs = scrape(slugs)
+        try:
+            live, slugs = scrape(slugs)
+        except RuntimeError as e:
+            # Boutiqaat sometimes refuses one GitHub server (403). Don't fail the run for that
+            # (no failure emails); only warn on the phone if it lasts about 30 minutes.
+            print("blocked/failed:", e)
+            state["blocked"] = state.get("blocked", 0) + 1
+            if state["blocked"] == 6:
+                send(chat, "⚠️ بوتيكات ما يرد على الفحص من حوالي نص ساعة. بأستمر أحاول.")
+            save(state, before)
+            return
+        if state.get("blocked", 0) >= 6:
+            send(chat, "✅ رجع الفحص يشتغل عادي.")
+        state["blocked"] = 0
         check_once(state, live, chat, first)
         first = False
         save(state, before)
