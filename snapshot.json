@@ -1,5 +1,5 @@
 {
- "time": "2026-11-24T17:35:57Z",
+ "time": "2026-11-24T17:40:22Z",
  "items": [
   {
    "name": "اصدار خاص بف سيبي ثري دي ستروبيري - ديزي بيريز",
@@ -186,7 +186,7 @@
   {
    "name": "بف سيبي لون ارمي غرين مطفي",
    "ml": 450,
-   "qty": 8,
+   "qty": 7,
    "price": 140,
    "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-army-green-450-ml-matte-i-00000171445-1/p/"
   },
@@ -235,7 +235,7 @@
   {
    "name": "بف سيبي لون اسود مطفي",
    "ml": 350,
-   "qty": 6294,
+   "qty": 6295,
    "price": 126,
    "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-black-350-ml-matte-i-00000171428-1/p/"
   },
@@ -252,6 +252,20 @@
    "qty": 5717,
    "price": 154,
    "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-black-550ml-matte-i-00000186379-1/p/"
+  },
+  {
+   "name": "بف سيبي لون اصفر عاكس",
+   "ml": 350,
+   "qty": 1,
+   "price": 126,
+   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-yellow-350-ml-shine-i-00000171458-1/p/"
+  },
+  {
+   "name": "بف سيبي لون اصفر عاكس",
+   "ml": 450,
+   "qty": 188,
+   "price": 140,
+   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-yellow-450-ml-shine-i-00000171459-1/p/"
   },
   {
    "name": "بف سيبي لون اصفر مطفي",
@@ -308,6 +322,27 @@
    "qty": 129,
    "price": 140,
    "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-avocado-450-ml-shine-i-00000171453-1/p/"
+  },
+  {
+   "name": "بف سيبي لون افوكادو مطفي",
+   "ml": 350,
+   "qty": 1933,
+   "price": 126,
+   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-avocado-350-ml-matte-i-00000171450-1/p/"
+  },
+  {
+   "name": "بف سيبي لون افوكادو مطفي",
+   "ml": 450,
+   "qty": 1464,
+   "price": 140,
+   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-avocado-450-ml-matte-i-00000171451-1/p/"
+  },
+  {
+   "name": "بف سيبي لون افوكادو مطفي",
+   "ml": 550,
+   "qty": 1539,
+   "price": 154,
+   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-avocado-550ml-matte-i-00000186374-1/p/"
   },
   {
    "name": "بف سيبي لون بابل غم مطفي",
