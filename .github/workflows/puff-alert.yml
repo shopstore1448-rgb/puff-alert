@@ -42,10 +42,10 @@ jobs:
           retention-days: 30
       - name: Save state
         run: |
-          if [ -n "$(git status --porcelain state.json)" ]; then
+          if [ -n "$(git status --porcelain state.json snapshot.json)" ]; then
             git config user.name "puff-bot"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add state.json
+            git add state.json snapshot.json
             git commit -m "update stock state"
             git pull --rebase -q || true
             git push
