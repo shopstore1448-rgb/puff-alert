@@ -23,6 +23,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main   # always start from the newest saved state
       - name: Check stock
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
@@ -50,6 +52,6 @@ jobs:
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add state.json snapshot.json
             git commit -m "update stock state"
-            git pull --rebase -q || true
+            git pull --rebase -X theirs -q || true
             git push
           fi
