@@ -67,3 +67,25 @@ Settings ثم Secrets and variables ثم Actions ثم تبويب **Variables** �
 أي أحد يقدر يشوف الكود، بس التوكن ورقم المحادثة مخفيين في Secrets وما يظهرون لأحد. والمستودع العام مجاني بلا حد للدقائق.
 
 **ملاحظة:** GitHub يوقف الجداول التلقائية إذا ما صار أي تحديث بالمستودع 60 يوم. البرنامج يحفظ تحديث كل ما تغيّر المخزون، فغالباً ما يوقف. لو وقف، تجيك رسالة إيميل من GitHub وتقدر تفعّله بضغطة.
+
+---
+
+## تشغيل كل 5 دقائق بالضبط (cron-job.org)
+
+جدول GitHub يتأخر، فنخلي موقع cron-job.org المجاني يشغّله كل 5 دقائق:
+
+1. **رمز وصول من GitHub:** افتح https://github.com/settings/personal-access-tokens/new
+   - Token name: `cron` ، Expiration: سنة
+   - Repository access: **Only select repositories** واختر `puff-alert`
+   - Permissions ← Repository permissions ← **Actions: Read and write**
+   - Generate token وانسخه
+2. **cron-job.org:** سجّل حساب ثم **Create cronjob**
+   - URL: `https://api.github.com/repos/shopstore1448-rgb/puff-alert/actions/workflows/puff-alert.yml/dispatches`
+   - Execution schedule: Every 5 minutes
+   - تبويب Advanced: Request method **POST**
+   - Headers:
+     - `Authorization` = `Bearer` ثم مسافة ثم الرمز
+     - `Accept` = `application/vnd.github+json`
+     - `Content-Type` = `application/json`
+   - Request body: `{"ref":"main"}`
+   - Save، وزر Test run لازم يطلع 204
