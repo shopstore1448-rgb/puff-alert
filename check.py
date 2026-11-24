@@ -13,6 +13,12 @@ UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36")
 NEXT_RE = re.compile(r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', re.S)
 EX = re.compile(r"ماصة|غطاء|قاعدة|حامل|دفتر|قالب|shaker|شيكر|ستيكر|sticker|stickii|matcha-set|تحضير الماتشا|\blid\b|straw(?!berry)|handle|boot|journal|ice-?tray|glass|phone|puff-jr|flippii|accessor|bottle-lid", re.I)
+RULES = [("gosippii", "go-sippii"), ("grippii", "grippii"), ("koffii", "koffi|coffee-bottle"),
+         ("sipping", "sipping"), ("loopii", "loopii"), ("hanger", "hanger"),
+         ("widemouth", "widemouth|puff-wide-"), ("smoothie", "mega-bottle"),
+         ("cups", "cup-set|puff-cup|cups-set"), ("sippii", "sippii"), ("bottll", "bottle")]
+# Which PUFF types to watch (comma separated keys from RULES). Default: Sippii only. "all" = everything.
+TYPES = [t.strip() for t in (os.environ.get("TYPES") or "sippii").split(",") if t.strip()]
 LIST_PATH = "/ar-sa/women/puff/br/cid/480/?page=%d"
 
 TOKEN = os.environ.get("TELEGRAM_TOKEN", "").strip()
@@ -43,6 +49,16 @@ def fetch(path, tries=3):
             last = e
             time.sleep(2 * (a + 1))
     raise RuntimeError("%s: %s" % (url, last))
+
+
+def typ(slug):
+    for k, rule in RULES:
+        if re.search(rule, slug):
+            return k
+
+
+def watched_type(slug):
+    return "all" in TYPES or typ(slug) in TYPES
 
 
 def mlv(v):
@@ -94,6 +110,9 @@ def scrape():
     slugs = [s for s in names if not EX.search(s) and not EX.search(names[s])]
     if len(slugs) < 150:
         raise RuntimeError("only %d products found (site blocked or changed?)" % len(slugs))
+    slugs = [s for s in slugs if watched_type(s)]
+    if not slugs:
+        raise RuntimeError("no products of type %s found" % TYPES)
     live, failed = {}, 0
     with ThreadPoolExecutor(6) as ex:
         for res in ex.map(lambda s: _safe(product, s), slugs):
@@ -252,7 +271,7 @@ def main():
             elif new[k] == 1 and old.get(k) != 1:
                 msgs.append(fmt(it, "⚠️ قرب يخلص! باقي %d حبة بس\n" % it["qty"]))
                 items.append((msgs[-1], it["url"], "⚠️ باقي %d حبة بس" % it["qty"]))
-    merged = dict(old)
+    merged = {k: v for k, v in old.items() if watched_type(k)}
     merged.update(new)  # sizes not read this time keep their old value
     state["items"] = merged
     if msgs:

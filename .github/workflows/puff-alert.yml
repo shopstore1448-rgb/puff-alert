@@ -30,6 +30,7 @@ jobs:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           WATCH: ${{ vars.WATCH }}
           LOW_STOCK: ${{ vars.LOW_STOCK }}
+          TYPES: ${{ vars.TYPES }}
         run: python3 check.py ${{ inputs.test && '--test' || '' }}
       - name: Save state
         run: |
