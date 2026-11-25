@@ -1,5 +1,5 @@
 {
- "time": "2026-11-25T00:29:26Z",
+ "time": "2026-11-25T00:34:40Z",
  "items": [
   {
    "name": "اصدار خاص بف سيبي ثري دي ستروبيري - ديزي بيريز",
@@ -21,6 +21,27 @@
    "qty": 1607,
    "price": 168,
    "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-3d-strawberry-550ml-i-00000230460-1/p/"
+  },
+  {
+   "name": "اصدار خاص بف سيبي ثري دي شيل - سيشل سمر",
+   "ml": 350,
+   "qty": 0,
+   "price": 140,
+   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-3d-shell-350ml-i-00000230588-1/p/"
+  },
+  {
+   "name": "اصدار خاص بف سيبي ثري دي شيل - سيشل سمر",
+   "ml": 450,
+   "qty": 1607,
+   "price": 154,
+   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-3d-shell-450ml-i-00000230456-1/p/"
+  },
+  {
+   "name": "اصدار خاص بف سيبي ثري دي شيل - سيشل سمر",
+   "ml": 550,
+   "qty": 1088,
+   "price": 168,
+   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-3d-shell-550ml-i-00000230457-1/p/"
   },
   {
    "name": "اصدار خاص بف سيبي لون ارمي غرين كروم",
@@ -296,6 +317,20 @@
    "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-african-violet-550ml-matte-i-00000186372-1/p/"
   },
   {
+   "name": "بف سيبي لون افوكادو عاكس",
+   "ml": 350,
+   "qty": 361,
+   "price": 126,
+   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-avocado-350-ml-shine-i-00000171452-1/p/"
+  },
+  {
+   "name": "بف سيبي لون افوكادو عاكس",
+   "ml": 450,
+   "qty": 129,
+   "price": 140,
+   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-avocado-450-ml-shine-i-00000171453-1/p/"
+  },
+  {
    "name": "بف سيبي لون افوكادو مطفي",
    "ml": 350,
    "qty": 1933,
@@ -513,27 +548,6 @@
    "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-berry-jam-550ml-matte-i-00000186378-1/p/"
   },
   {
-   "name": "بف سيبي لون بيزل مطفي",
-   "ml": 350,
-   "qty": 0,
-   "price": 126,
-   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-basil-350-ml-matte-i-00000171448-1/p/"
-  },
-  {
-   "name": "بف سيبي لون بيزل مطفي",
-   "ml": 450,
-   "qty": 6,
-   "price": 140,
-   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-basil-450-ml-matte-i-00000171449-1/p/"
-  },
-  {
-   "name": "بف سيبي لون بيزل مطفي",
-   "ml": 550,
-   "qty": 1061,
-   "price": 154,
-   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-basil-550ml-matte-i-00000186377-1/p/"
-  },
-  {
    "name": "بف سيبي لون بينك يارو مطفي",
    "ml": 350,
    "qty": 149,
@@ -735,6 +749,20 @@
    "qty": 1981,
    "price": 154,
    "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-volcanic-550ml-matte-i-00000186397-1/p/"
+  },
+  {
+   "name": "بف سيبي لون كريمزيكل عاكس",
+   "ml": 350,
+   "qty": 329,
+   "price": 126,
+   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-creamsicle-350-ml-shine-i-00000171492-1/p/"
+  },
+  {
+   "name": "بف سيبي لون كريمزيكل عاكس",
+   "ml": 450,
+   "qty": 270,
+   "price": 140,
+   "url": "https://www.boutiqaat.com/ar-sa/women/puff-sippii-creamsicle-450-ml-shine-i-00000171493-1/p/"
   },
   {
    "name": "بف سيبي لون كريمزيكل مطفي",
