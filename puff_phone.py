@@ -30,7 +30,8 @@ SLUGS = [
 
 TOPIC = (sys.argv[1] if len(sys.argv) > 1 else os.environ.get("NTFY_TOPIC", "")).strip()
 STATE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "puff_phone_state.json")
-UA = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36"
+UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+      "(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36")
 NEXT_RE = re.compile(r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', re.S)
 
 
@@ -46,6 +47,7 @@ def ntfy(msg, title="PUFF", click=None, prio=4):
         try:
             urllib.request.urlopen(urllib.request.Request("https://ntfy.sh/", json.dumps(body).encode(),
                                    {"Content-Type": "application/json"}), timeout=30).read()
+            print("ntfy sent:", title)
             return
         except Exception as e:
             print("ntfy failed:", e)
@@ -61,15 +63,19 @@ def product(slug):
     url = "https://www.boutiqaat.com/ar-sa/women/%s/p/" % slug
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": "ar,en;q=0.8",
                                                "Accept-Encoding": "gzip"})
-    try:
-        with urllib.request.urlopen(req, timeout=60) as r:
-            raw = r.read()
-            if r.headers.get("Content-Encoding", "").lower() == "gzip":
-                raw = gzip.decompress(raw)
-    except urllib.error.HTTPError as e:
-        if e.code in (403, 429):
-            raise Blocked(e.code)
-        raise
+    for attempt in range(2):
+        try:
+            with urllib.request.urlopen(req, timeout=60) as r:
+                raw = r.read()
+                if r.headers.get("Content-Encoding", "").lower() == "gzip":
+                    raw = gzip.decompress(raw)
+            break
+        except urllib.error.HTTPError as e:
+            if e.code in (403, 429):
+                raise Blocked(e.code)
+            if attempt:
+                raise
+            time.sleep(10)
     m = NEXT_RE.search(raw.decode("utf-8", "replace"))
     if not m:
         raise Blocked("no data")
@@ -82,6 +88,8 @@ def product(slug):
         u = "https://www.boutiqaat.com/ar-sa/women/" + re.sub(r"/p/?$", "", ch.get("slug") or slug) + "/p/"
         out[u] = {"name": name, "ml": mlv(o.get("value")), "qty": int(float(o.get("available_qty") or 0)),
                   "price": int(float(ch.get("final_price_with_tax") or 0)), "url": u}
+    if not out:
+        raise ValueError("no sizes on page (keys: %s)" % ",".join(list(r.keys())[:8]))
     return out
 
 
@@ -107,7 +115,9 @@ def main():
         try:
             for s in SLUGS:
                 try:
-                    live.update(product(s))
+                    got = product(s)
+                    live.update(got)
+                    print("ok", len(got), "sizes:", s[12:45])
                 except Blocked:
                     raise
                 except Exception as e:
@@ -116,6 +126,10 @@ def main():
         except Blocked as e:
             print("blocked:", e)
             ntfy("⛔ بوتيكات رفض الفحص من جوالك (%s)، فوقفت المراقبة عشان ما ينحظر النت عندك.\nشغّلها مرة ثانية بعدين." % e)
+            sys.exit(1)
+        if not live:
+            print("nothing read this round, stopping")
+            ntfy("⚠️ الجوال ما قدر يقرأ ولا صفحة من بوتيكات، فوقفت المراقبة. أرسل صورة شاشة Termux.")
             sys.exit(1)
         if first:
             out = sum(1 for i in live.values() if i["qty"] == 0)
