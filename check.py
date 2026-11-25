@@ -113,6 +113,8 @@ def scrape(slugs=None):
     if len(slugs) < 150:
         raise RuntimeError("only %d products found (site blocked or changed?)" % len(slugs))
     slugs = [s for s in slugs if watched_type(s)]
+    if WATCH:  # only the colours the user cares about: far fewer pages per check
+        slugs = [s for s in slugs if any(w in names[s] for w in WATCH)]
     if not slugs:
         raise RuntimeError("no products of type %s found" % TYPES)
     return scrape_products(slugs), slugs
@@ -262,7 +264,8 @@ def main():
     if time.time() < state.get("pause_until", 0):
         print("paused after a refusal until", time.strftime("%H:%M", time.gmtime(state["pause_until"])), "UTC")
         return
-    slugs = state.get("slugs") if time.time() - state.get("slugs_at", 0) < 3600 else None
+    fresh = time.time() - state.get("slugs_at", 0) < 6 * 3600 and state.get("watch") == WATCH
+    slugs = state.get("slugs") if fresh else None
     while True:
         t0 = time.time()
         try:
@@ -281,7 +284,7 @@ def main():
             send(chat, "✅ رجع الفحص يشتغل عادي.")
         state["blocked"] = 0
         if slugs != state.get("slugs"):
-            state["slugs"], state["slugs_at"] = slugs, int(time.time())
+            state["slugs"], state["slugs_at"], state["watch"] = slugs, int(time.time()), WATCH
         check_once(state, live, chat, first)
         first = False
         save(state, before)
