@@ -257,7 +257,12 @@ def main():
         return
     loop = int(os.environ.get("LOOP_SECONDS") or 0)   # keep checking inside one run
     every = int(os.environ.get("EVERY_SECONDS") or 60)
-    start, slugs, first = time.time(), None, True
+    start, first = time.time(), True
+    # Be gentle with the site: reuse the product list for an hour, and pause after a refusal.
+    if time.time() < state.get("pause_until", 0):
+        print("paused after a refusal until", time.strftime("%H:%M", time.gmtime(state["pause_until"])), "UTC")
+        return
+    slugs = state.get("slugs") if time.time() - state.get("slugs_at", 0) < 3600 else None
     while True:
         t0 = time.time()
         try:
@@ -267,13 +272,16 @@ def main():
             # (no failure emails); only warn on the phone if it lasts about 30 minutes.
             print("blocked/failed:", e)
             state["blocked"] = state.get("blocked", 0) + 1
-            if state["blocked"] == 6:
-                send(chat, "⚠️ بوتيكات ما يرد على الفحص من حوالي نص ساعة. بأستمر أحاول.")
+            state["pause_until"] = int(time.time()) + 60 * min(60, 15 * state["blocked"])
+            if state["blocked"] == 2:
+                send(chat, "⚠️ بوتيكات يرفض الفحص حالياً. بأخفف المحاولات وأرجع أجرّب لحالي.")
             save(state, before)
             return
-        if state.get("blocked", 0) >= 6:
+        if state.get("blocked", 0) >= 2:
             send(chat, "✅ رجع الفحص يشتغل عادي.")
         state["blocked"] = 0
+        if slugs != state.get("slugs"):
+            state["slugs"], state["slugs_at"] = slugs, int(time.time())
         check_once(state, live, chat, first)
         first = False
         save(state, before)
