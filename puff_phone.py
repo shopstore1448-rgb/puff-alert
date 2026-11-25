@@ -58,7 +58,11 @@ def mlv(v):
     return 1000 if str(v).upper().startswith("1L") else (int(d) if d else 0)
 
 
-def product(slug):
+PARENT = {}   # size page slug -> colour page slug (the colour page lists all sizes)
+
+
+def product(slug, depth=0):
+    slug = PARENT.get(slug, slug)
     url = "https://www.boutiqaat.com/ar-sa/women/%s/p/" % slug
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": "ar,en;q=0.8",
                                                "Accept-Encoding": "gzip"})
@@ -87,8 +91,14 @@ def product(slug):
         u = "https://www.boutiqaat.com/ar-sa/women/" + re.sub(r"/p/?$", "", ch.get("slug") or slug) + "/p/"
         out[u] = {"name": name, "ml": mlv(o.get("value")), "qty": int(float(o.get("available_qty") or 0)),
                   "price": int(float(ch.get("final_price_with_tax") or 0)), "url": u}
+    parent = re.sub(r"^/|/p/?$", "", str(r.get("parentSlug") or "")).split("/")[-1]
+    if not out and parent and parent != slug and depth == 0:
+        time.sleep(GAP_SEC)
+        res = product(parent, 1)
+        PARENT[slug] = parent
+        return res
     if not out:
-        raise ValueError("no sizes on page (keys: %s)" % ",".join(list(r.keys())[:8]))
+        raise ValueError("no sizes on page (parent=%s, keys: %s)" % (parent, ",".join(k for k in r if re.search("opt|qty|child|config|size", k, re.I)) or len(r)))
     return out
 
 
