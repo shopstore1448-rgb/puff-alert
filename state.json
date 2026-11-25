@@ -1,5 +1,5 @@
 {
-"blocked": 10,
+"blocked": 11,
 "items": {
 "https://www.boutiqaat.com/ar-sa/women/puff-sippii-3d-shell-350ml-i-00000230588-1/p/": 0,
 "https://www.boutiqaat.com/ar-sa/women/puff-sippii-3d-shell-450ml-i-00000230456-1/p/": 2,
@@ -124,5 +124,5 @@
 "https://www.boutiqaat.com/ar-sa/women/puff-sippii-yellow-450-ml-shine-i-00000171459-1/p/": 2,
 "https://www.boutiqaat.com/ar-sa/women/puff-sippii-yellow-550ml-matte-i-00000186399-1/p/": 2
 },
-"pause_until": 1795626142
+"pause_until": 1795630015
 }
