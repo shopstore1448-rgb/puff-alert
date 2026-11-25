@@ -2,13 +2,16 @@
 """PUFF restock alert: checks boutiqaat PUFF stock and sends a Telegram message
 when a colour/size goes from out of stock (0) to in stock. Runs on GitHub Actions.
 Standalone copy of the scraping logic; it does not touch any other program."""
+import base64
 import json, os, re, sys, gzip, time
 import urllib.request, urllib.parse
 from concurrent.futures import ThreadPoolExecutor
+from functools import lru_cache
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 STATE = os.path.join(HERE, "state.json")
 BASE = "https://www.boutiqaat.com"
+BOUTIQAAT_HOSTS = {"www.boutiqaat.com", "boutiqaat.com"}
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36")
 NEXT_RE = re.compile(r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', re.S)
@@ -29,15 +32,80 @@ LOW = int(os.environ.get("LOW_STOCK") or 10)  # alert when a size drops to this 
 WATCH = [w.strip() for w in os.environ.get("WATCH", "").split(",") if w.strip()]
 
 
+class BoutiqaatProxyHandler(urllib.request.HTTPSHandler):
+    def __init__(self, address, auth):
+        super().__init__()
+        self.address = address
+        self.auth = auth
+
+    def https_open(self, req):
+        # Set the CONNECT tunnel explicitly so NO_PROXY cannot bypass it.
+        req.set_proxy(self.address, "http")
+        if self.auth:
+            req.add_unredirected_header("Proxy-Authorization", self.auth)
+        return super().https_open(req)
+
+
+class BoutiqaatRedirectHandler(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        destination = urllib.parse.urlsplit(newurl)
+        if (
+            destination.scheme != "https"
+            or destination.hostname not in BOUTIQAAT_HOSTS
+            or destination.port not in (None, 443)
+            or destination.username is not None
+        ):
+            raise RuntimeError("Boutiqaat redirected outside its HTTPS product site")
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+@lru_cache(maxsize=1)
+def boutiqaat_opener():
+    value = os.environ.get("BOUTIQAAT_PROXY_URL", "").strip()
+    if not value:
+        if os.environ.get("GITHUB_ACTIONS") == "true":
+            raise SystemExit("Set the BOUTIQAAT_PROXY_URL secret before running the check.")
+        return None
+    try:
+        proxy = urllib.parse.urlsplit(value)
+        if (
+            proxy.scheme != "http"
+            or not proxy.hostname
+            or any(ch.isspace() or ord(ch) < 32 for ch in value)
+            or proxy.path not in ("", "/")
+            or proxy.query
+            or proxy.fragment
+            or proxy.port == 0
+            or (proxy.username is not None and (not proxy.username or proxy.password is None))
+        ):
+            raise ValueError
+    except ValueError:
+        raise SystemExit("BOUTIQAAT_PROXY_URL must be a valid HTTP proxy URL.") from None
+    address = proxy.netloc.rsplit("@", 1)[-1]
+    auth = None
+    if proxy.username is not None:
+        user = urllib.parse.unquote(proxy.username)
+        password = urllib.parse.unquote(proxy.password)
+        encoded = base64.b64encode(f"{user}:{password}".encode("utf-8")).decode("ascii")
+        auth = "Basic " + encoded
+    return urllib.request.build_opener(
+        urllib.request.ProxyHandler({}),
+        BoutiqaatProxyHandler(address, auth),
+        BoutiqaatRedirectHandler(),
+    )
+
+
 def fetch(path, tries=3):
     url = BASE + path
+    opener = boutiqaat_opener()
+    open_url = opener.open if opener is not None else urllib.request.urlopen
     last = None
     for a in range(tries):
         try:
             req = urllib.request.Request(url, headers={
                 "User-Agent": UA, "Accept": "text/html,application/xhtml+xml,*/*;q=0.8",
                 "Accept-Language": "ar,en;q=0.8", "Accept-Encoding": "gzip", "Cache-Control": "no-cache"})
-            with urllib.request.urlopen(req, timeout=60) as r:
+            with open_url(req, timeout=60) as r:
                 raw = r.read()
                 if r.headers.get("Content-Encoding", "").lower() == "gzip":
                     raw = gzip.decompress(raw)
@@ -244,6 +312,7 @@ def wanted(it):
 
 
 def main():
+    boutiqaat_opener()
     state = {}
     if os.path.exists(STATE):
         state = json.load(open(STATE, encoding="utf-8"))

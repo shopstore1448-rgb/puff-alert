@@ -27,6 +27,7 @@ jobs:
           ref: main   # always start from the newest saved state
       - name: Check stock
         env:
+          BOUTIQAAT_PROXY_URL: ${{ secrets.BOUTIQAAT_PROXY_URL }}
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
