@@ -1,59 +1,39 @@
-name: PUFF restock alert
+name: PUFF single product connection test
 
 on:
-  schedule:
-    - cron: "*/5 * * * *"   # every 5 minutes (GitHub's minimum; runs are often late)
   workflow_dispatch:
-    inputs:
-      test:
-        description: "Test only (check site access + send a test message)"
-        type: boolean
-        default: false
 
 permissions:
-  contents: write
-
-concurrency:
-  group: puff-alert
-  cancel-in-progress: false
+  contents: read
 
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: main   # always start from the newest saved state
-      - name: Check stock
+      - name: Check one product through Webshare
         env:
           BOUTIQAAT_PROXY_URL: ${{ secrets.BOUTIQAAT_PROXY_URL }}
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-          WATCH: ${{ vars.WATCH }}
-          LOW_STOCK: ${{ vars.LOW_STOCK }}
-          FOCUS_BELOW: ${{ vars.FOCUS_BELOW || '200' }}
-          TYPES: ${{ vars.TYPES }}
-          LOOP_SECONDS: ${{ vars.LOOP_SECONDS || '270' }}
-          EVERY_SECONDS: ${{ vars.EVERY_SECONDS || '300' }}
-        run: python3 check.py ${{ inputs.test && '--test' || '' }}
-      - name: Keep a copy of the stock data
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: sippii-snapshot-${{ github.run_id }}
-          path: snapshot.json
-          if-no-files-found: ignore
-          retention-days: 30
-      - name: Save state
-        if: always()
         run: |
-          if [ -n "$(git status --porcelain state.json snapshot.json)" ]; then
-            git config user.name "puff-bot"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add state.json snapshot.json
-            git commit -m "update stock state"
-            git pull --rebase -X theirs -q || true
-            git push
-          fi
+          python3 - <<'PY'
+          import check
+
+          path = "/ar-sa/women/puff-sippii-chocolate-brown-550-ml-chrome-i-00000194251-1/p/"
+          try:
+              data = check.fetch(path, tries=1)
+              product = data["props"]["pageProps"]["response"]
+              if isinstance(product, list):
+                  product = product[0]
+              options = product.get("multi_configurable_option") or []
+              quantities = [option.get("available_qty") for option in options]
+              if not options:
+                  quantities = [product.get("qty_available")]
+              quantities = [int(float(quantity)) for quantity in quantities if quantity is not None]
+              if not quantities:
+                  raise ValueError("Product page loaded but no stock field was present")
+              print("PRODUCT_PAGE_OK")
+              print("STOCK_VALUES=" + ",".join(str(quantity) for quantity in quantities))
+          except (RuntimeError, KeyError, IndexError, TypeError, ValueError, AttributeError) as error:
+              raise SystemExit(str(error)) from None
+          PY
