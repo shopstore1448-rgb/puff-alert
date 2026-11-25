@@ -32,6 +32,7 @@ jobs:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           WATCH: ${{ vars.WATCH }}
           LOW_STOCK: ${{ vars.LOW_STOCK }}
+          FOCUS_BELOW: ${{ vars.FOCUS_BELOW || '200' }}
           TYPES: ${{ vars.TYPES }}
           LOOP_SECONDS: ${{ vars.LOOP_SECONDS || '270' }}
           EVERY_SECONDS: ${{ vars.EVERY_SECONDS || '300' }}

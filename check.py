@@ -91,12 +91,12 @@ def product(slug):
     for o in r.get("multi_configurable_option") or []:
         ch = o.get("single_child_info") or {}
         url = "https://www.boutiqaat.com/ar-sa/women/" + re.sub(r"/p/?$", "", ch.get("slug") or slug) + "/p/"
-        items[url] = {"name": name, "ml": mlv(o.get("value")),
+        items[url] = {"name": name, "slug": slug, "ml": mlv(o.get("value")),
                       "qty": int(float(o.get("available_qty") or 0)),
                       "price": int(float(ch.get("final_price_with_tax") or 0)), "url": url}
     if not items:
         url = "https://www.boutiqaat.com/ar-sa/women/" + slug + "/p/"
-        items[url] = {"name": name, "ml": 0, "qty": int(float(r.get("qty_available") or 0)),
+        items[url] = {"name": name, "slug": slug, "ml": 0, "qty": int(float(r.get("qty_available") or 0)),
                       "price": int(float(r.get("final_price_with_tax") or 0)), "url": url}
     return items
 
@@ -117,7 +117,12 @@ def scrape(slugs=None):
         slugs = [s for s in slugs if any(w in names[s] for w in WATCH)]
     if not slugs:
         raise RuntimeError("no products of type %s found" % TYPES)
-    return scrape_products(slugs), slugs
+    live = scrape_products(slugs)
+    focus = int(os.environ.get("FOCUS_BELOW") or 0)
+    if focus:  # from now on only re-check colours that are sold out or running low (< focus)
+        slugs = sorted({v["slug"] for v in live.values() if v["qty"] < focus})
+        print("focusing on %d colours with a size under %d" % (len(slugs), focus))
+    return live, slugs
 
 
 def scrape_products(slugs):
@@ -264,7 +269,7 @@ def main():
     if time.time() < state.get("pause_until", 0):
         print("paused after a refusal until", time.strftime("%H:%M", time.gmtime(state["pause_until"])), "UTC")
         return
-    fresh = time.time() - state.get("slugs_at", 0) < 6 * 3600 and state.get("watch") == WATCH
+    fresh = time.time() - state.get("slugs_at", 0) < 6 * 3600 and state.get("watch") == [WATCH, os.environ.get("FOCUS_BELOW") or ""]
     slugs = state.get("slugs") if fresh else None
     while True:
         t0 = time.time()
@@ -284,7 +289,7 @@ def main():
             send(chat, "✅ رجع الفحص يشتغل عادي.")
         state["blocked"] = 0
         if slugs != state.get("slugs"):
-            state["slugs"], state["slugs_at"], state["watch"] = slugs, int(time.time()), WATCH
+            state["slugs"], state["slugs_at"], state["watch"] = slugs, int(time.time()), [WATCH, os.environ.get("FOCUS_BELOW") or ""]
         check_once(state, live, chat, first)
         first = False
         save(state, before)
