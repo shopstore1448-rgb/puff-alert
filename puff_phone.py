@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """PUFF Sippii stock alert for an Android phone (Termux), on home internet.
-Light: checks only the colours below, one page at a time, every 10 minutes.
+Light: checks only the colours below, one page at a time, every 8 min (9 AM-4 PM Riyadh) or 18 min otherwise.
 Usage:  python puff_phone.py YOUR_NTFY_TOPIC"""
 import json, os, re, sys, gzip, time, urllib.request
 
-EVERY_MIN = 10      # minutes between rounds
+DAY_MIN = 8         # minutes between rounds, 9 AM to 4 PM Riyadh time
+NIGHT_MIN = 18      # minutes between rounds, the rest of the day
 GAP_SEC = 4         # seconds between pages
 LOW = 10            # alert when a size drops to this many or fewer
 SLUGS = [
@@ -84,6 +85,11 @@ def product(slug):
     return out
 
 
+def wait_min():
+    h = time.gmtime(time.time() + 3 * 3600).tm_hour   # Riyadh = UTC+3
+    return DAY_MIN if 9 <= h < 16 else NIGHT_MIN
+
+
 def line(it):
     return "%s\nالحجم: %s مل\nالسعر: %s ر.س\nالكمية المتوفرة: %s حبة" % (it["name"], it["ml"], it["price"], it["qty"])
 
@@ -113,7 +119,7 @@ def main():
             sys.exit(1)
         if first:
             out = sum(1 for i in live.values() if i["qty"] == 0)
-            ntfy("👋 بدأت المراقبة من الجوال.\nأراقب %d حجم/لون، منها %d غير متوفر الآن.\nالفحص كل %d دقائق." % (len(live), out, EVERY_MIN))
+            ntfy("👋 بدأت المراقبة من الجوال.\nأراقب %d حجم/لون، منها %d غير متوفر الآن.\nالفحص كل %d دقائق من 9 الصبح لين 4 العصر، وكل %d دقيقة باقي الوقت." % (len(live), out, DAY_MIN, NIGHT_MIN))
             first = False
         else:
             for u, it in live.items():
@@ -127,7 +133,7 @@ def main():
         state.update({u: it["qty"] for u, it in live.items()})
         json.dump(state, open(STATE, "w"))
         print(time.strftime("%H:%M"), "checked", len(live), "sizes")
-        time.sleep(EVERY_MIN * 60)
+        time.sleep(wait_min() * 60)
 
 
 if __name__ == "__main__":
