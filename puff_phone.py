@@ -30,8 +30,7 @@ SLUGS = [
 
 TOPIC = (sys.argv[1] if len(sys.argv) > 1 else os.environ.get("NTFY_TOPIC", "")).strip()
 STATE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "puff_phone_state.json")
-UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-      "(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36")
+UA = "puff-stock-checker/1.0 (personal restock alert)"
 NEXT_RE = re.compile(r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', re.S)
 
 
