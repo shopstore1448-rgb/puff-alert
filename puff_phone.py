@@ -38,6 +38,10 @@ class Blocked(Exception):
     pass
 
 
+class NoNet(Exception):
+    pass
+
+
 def ntfy(msg, title="PUFF", click=None, prio=4):
     body = {"topic": TOPIC, "title": title, "message": msg, "priority": prio}
     if click:
@@ -79,6 +83,8 @@ def product(slug, depth=0):
             if attempt:
                 raise
             time.sleep(10)
+        except (urllib.error.URLError, OSError) as e:   # no answer at all: phone offline / DNS
+            raise NoNet(e)
     m = NEXT_RE.search(raw.decode("utf-8", "replace"))
     if not m:
         raise Blocked("no data")
@@ -120,7 +126,7 @@ def main():
         state = {}
     first = not state
     while True:
-        live = {}
+        live, offline = {}, False
         try:
             for s in SLUGS:
                 try:
@@ -129,6 +135,10 @@ def main():
                     print("ok", len(got), "sizes:", s[12:45])
                 except Blocked:
                     raise
+                except NoNet as e:
+                    print("no internet:", e)
+                    offline = True
+                    break
                 except Exception as e:
                     print("skip", s, e)
                 time.sleep(GAP_SEC)
@@ -136,6 +146,10 @@ def main():
             print("blocked:", e)
             ntfy("⛔ بوتيكات رفض الفحص من جوالك (%s)، فوقفت المراقبة عشان ما ينحظر النت عندك.\nشغّلها مرة ثانية بعدين." % e)
             sys.exit(1)
+        if offline and not live:
+            print(time.strftime("%H:%M"), "no internet, trying again in 2 minutes")
+            time.sleep(120)
+            continue
         if not live:
             print("nothing read this round, stopping")
             ntfy("⚠️ الجوال ما قدر يقرأ ولا صفحة من بوتيكات، فوقفت المراقبة. أرسل صورة شاشة Termux.")
