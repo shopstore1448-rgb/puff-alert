@@ -42,6 +42,41 @@ class NoNet(Exception):
     pass
 
 
+import socket
+_real_gai = socket.getaddrinfo
+_TG_HOST = "api.telegram.org"
+_tg_ip = []
+
+
+def _doh(name):
+    """Look up a name over HTTPS (used only if the phone's normal lookup fails)."""
+    for url in ("https://dns.google/resolve?name=%s&type=A" % name,
+                "https://cloudflare-dns.com/dns-query?name=%s&type=A" % name):
+        try:
+            req = urllib.request.Request(url, headers={"Accept": "application/dns-json"})
+            ans = json.load(urllib.request.urlopen(req, timeout=20)).get("Answer") or []
+            ips = [a["data"] for a in ans if a.get("type") == 1]
+            if ips:
+                return ips
+        except Exception as e:
+            print("lookup via", url.split("/")[2], "failed:", e)
+    return ["149.154.167.220"]   # Telegram's long-standing API address, last resort
+
+
+def _gai(host, *a, **k):
+    try:
+        return _real_gai(host, *a, **k)
+    except socket.gaierror:
+        if host != _TG_HOST:
+            raise
+        if not _tg_ip:
+            _tg_ip.extend(_doh(host))
+            print("telegram: using address", _tg_ip[0])
+        return _real_gai(_tg_ip[0], *a, **k)   # TLS still checks the real api.telegram.org certificate
+
+
+socket.getaddrinfo = _gai
+
 TG_FILE = os.path.expanduser("~/.puff_tg")   # line 1: bot token, line 2: chat id (filled in automatically)
 
 
