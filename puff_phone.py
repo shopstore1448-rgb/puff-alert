@@ -42,7 +42,55 @@ class NoNet(Exception):
     pass
 
 
+TG_FILE = os.path.expanduser("~/.puff_tg")   # line 1: bot token, line 2: chat id (filled in automatically)
+
+
+def tg_conf():
+    try:
+        lines = [l.strip() for l in open(TG_FILE) if l.strip()]
+    except Exception:
+        return "", ""
+    token = lines[0] if lines else ""
+    chat = lines[1] if len(lines) > 1 else ""
+    if token and not chat:   # find the chat id from the last message sent to the bot
+        try:
+            r = json.load(urllib.request.urlopen("https://api.telegram.org/bot%s/getUpdates" % token, timeout=30))
+            for u in reversed(r.get("result", [])):
+                m = u.get("message") or u.get("channel_post") or {}
+                if m.get("chat", {}).get("id"):
+                    chat = str(m["chat"]["id"])
+                    open(TG_FILE, "w").write(token + "\n" + chat + "\n")
+                    break
+        except Exception as e:
+            print("telegram setup failed:", e)
+        if not chat:
+            print("telegram: send any message to your bot, then run again")
+    return token, chat
+
+
+TG_TOKEN, TG_CHAT = tg_conf()
+print("telegram:", "on" if TG_TOKEN and TG_CHAT else "off")
+
+
+def telegram(msg, click=None):
+    if not (TG_TOKEN and TG_CHAT):
+        return
+    text = msg + ("\n" + click if click and click not in msg else "")
+    for _ in range(3):
+        try:
+            urllib.request.urlopen(urllib.request.Request(
+                "https://api.telegram.org/bot%s/sendMessage" % TG_TOKEN,
+                json.dumps({"chat_id": TG_CHAT, "text": text, "disable_web_page_preview": True}).encode(),
+                {"Content-Type": "application/json"}), timeout=30).read()
+            print("telegram sent")
+            return
+        except Exception as e:
+            print("telegram failed:", e)
+            time.sleep(5)
+
+
 def ntfy(msg, title="PUFF", click=None, prio=4):
+    telegram(msg, click)
     body = {"topic": TOPIC, "title": title, "message": msg, "priority": prio}
     if click:
         body["click"] = click
